@@ -41,7 +41,7 @@ const CanvasMy = () => {
       if (divRef.current?.offsetHeight && divRef.current?.offsetWidth) {
         setDimensions({
           width: divRef.current.offsetWidth,
-          height: divRef.current.offsetHeight,
+          height: divRef.current.offsetWidth * 0.75,
         });
       }
     };
@@ -260,39 +260,9 @@ const CanvasMy = () => {
     setSelectedTableId(null);
   };
 
-  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
-    e.evt.preventDefault();
-
-    const stage = stageRef.current!;
-    const oldScale = stage.scaleX();
-    const pointer = stage.getPointerPosition()!;
-
-    const mousePointTo = {
-      x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale,
-    };
-
-    let direction = e.evt.deltaY > 0 ? 1 : -1;
-
-    if (e.evt.ctrlKey) {
-      direction = -direction;
-    }
-
-    const scaleBy = 1.1;
-    const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
-    stage.scale({ x: newScale, y: newScale });
-
-    const newPos = {
-      x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
-    };
-    stage.position(newPos);
-  };
-
   return (
     <div className="flex flex-col w-full">
-      <div className="flex items-center p-4 gap-4 bg-gray-100">
+      <div className="flex items-center p-4 gap-4 bg-gray-100 flex-wrap">
         <div className="flex items-center gap-2">
           <label htmlFor="seats">People per table:</label>
           <select
@@ -345,68 +315,69 @@ const CanvasMy = () => {
         </button>
       </div>
 
-      <div
-        className="w-3/4 h-[400px] border-2 border-gray-200 m-10"
-        ref={divRef}
-      >
-        {dimensions.width > 0 && dimensions.height > 0 && (
-          <Stage
-            width={dimensions.width}
-            height={dimensions.height}
-            onClick={handleStageClick}
-            ref={stageRef}
-            onWheel={handleWheel}
-            draggable
-            scale={{
-              x: window.innerWidth * 0.001 > 1 ? 1 : window.innerWidth * 0.001,
-              y: window.innerWidth * 0.001 > 1 ? 1 : window.innerWidth * 0.001,
-            }}
-          >
-            <Layer>
-              {tables.map((table) => (
-                <Group
-                  key={table.id}
-                  id={table.id}
-                  x={table.x}
-                  y={table.y}
-                  rotation={table.rotation}
-                  draggable
-                  onClick={() => handleTableSelect(table.id)}
-                  onTap={() => handleTableSelect(table.id)}
-                  onDragEnd={handleDragEnd}
-                  onTransformEnd={handleTransformEnd}
-                >
-                  <Rect
-                    width={table.width}
-                    height={table.height}
-                    strokeWidth={table.id === selectedTableId ? 2 : 1}
-                    stroke="black"
-                    cornerRadius={5}
-                  />
-                  <Text
-                    text={`Table: ${table.number} Seats: ${table.seats}`}
-                    fontSize={14}
-                    fill="black"
-                    width={table.width}
-                    height={table.height}
-                    align="center"
-                    verticalAlign="middle"
-                  />
-                </Group>
-              ))}
+      <div className="px-10">
+        <div
+          className="w-full border-2 border-gray-200 mt-10"
+          ref={divRef}
+          style={{ height: dimensions.height + "px" }}
+        >
+          {dimensions.width > 0 && dimensions.height > 0 && (
+            <Stage
+              width={dimensions.width}
+              height={dimensions.height}
+              onClick={handleStageClick}
+              ref={stageRef}
+              scale={{
+                x: dimensions.width * 0.0007,
+                y: dimensions.height * 0.0007,
+              }}
+            >
+              <Layer>
+                {tables.map((table) => (
+                  <Group
+                    key={table.id}
+                    id={table.id}
+                    x={table.x}
+                    y={table.y}
+                    rotation={table.rotation}
+                    draggable
+                    onClick={() => handleTableSelect(table.id)}
+                    onTap={() => handleTableSelect(table.id)}
+                    onDragEnd={handleDragEnd}
+                    onTransformEnd={handleTransformEnd}
+                  >
+                    <Rect
+                      width={table.width}
+                      height={table.height}
+                      strokeWidth={table.id === selectedTableId ? 2 : 1}
+                      stroke="black"
+                      cornerRadius={5}
+                    />
+                    <Text
+                      text={`Table: ${table.number} Seats: ${table.seats}`}
+                      fontSize={14}
+                      fill="black"
+                      width={table.width}
+                      height={table.height}
+                      align="center"
+                      verticalAlign="middle"
+                    />
+                  </Group>
+                ))}
 
-              <Transformer
-                ref={transformerRef}
-                resizeEnabled={false}
-                rotateEnabled={true}
-                borderEnabled={true}
-                keepRatio={false}
-                enabledAnchors={[]}
-                rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
-              />
-            </Layer>
-          </Stage>
-        )}
+                <Transformer
+                  ref={transformerRef}
+                  resizeEnabled={false}
+                  rotateEnabled={true}
+                  borderEnabled={true}
+                  keepRatio={false}
+                  enabledAnchors={[]}
+                  rotationSnaps={[0, 45, 90, 135, 180, 225, 270, 315]}
+                />
+              </Layer>
+            </Stage>
+          )}
+        </div>
       </div>
     </div>
   );
